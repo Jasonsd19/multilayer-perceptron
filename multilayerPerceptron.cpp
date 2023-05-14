@@ -6,7 +6,7 @@
 struct hiddenLayer {
     matrix weights;
     matrix biases;
-    hiddenLayer(matrix weights, matrix biases): weights(weights), biases(biases) {}
+    hiddenLayer(matrix weights, matrix biases) : weights(weights), biases(biases) {}
 };
 
 // This represents a multilayer perceptron. It must have one input layer, one output layer,
@@ -30,8 +30,9 @@ private:
 
     // Calculates the average squared error between the given predictions and labels.
     double cost(matrix predictions, matrix labels) {
-        return matrix::mapSum((predictions - labels), [](double x) {return x * x;}) / predictions.getRows();
+        return matrix::sum(matrix::scalarMultiply(labels, -1) * matrix::map(predictions, [](double x) {return std::log(x);}) - matrix::map(labels, [](double x) {return 1 - x;}) * matrix::map(predictions, [](double x) {return std::log(1 - x);}));
     }
+
 
 public:
     // Initializes the size of each layer of the network, there must be one input layer, one output layer, and arbitrary hidden layers.
@@ -170,7 +171,7 @@ public:
 
                 // ---------- Back propagation to update weights and biases ----------
 
-                matrix lastPartialDerivative = matrix::scalarMultiply(lastA - testLabel, 2.0) * (lastA * (matrix::map(lastA, [](double x) { return 1.0 - x; })));
+                matrix lastPartialDerivative = lastA - testLabel;
 
                 matrix lastWeightGradient = matrix::matrixMultiply(lastPartialDerivative, matrix::transpose(hiddenAs.back()));
 
